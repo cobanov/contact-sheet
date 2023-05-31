@@ -1,6 +1,8 @@
 import os
 from PIL import Image
 from multiprocessing import Pool
+from tqdm import tqdm
+import argparse
 
 
 def generate_thumbnail(image_path, output_dir, thumbnail_size):
@@ -33,21 +35,28 @@ def create_contact_sheet(image_dir, output_file):
     os.makedirs(output_dir, exist_ok=True)
 
     # Use multiprocessing to generate thumbnails
-    pool = Pool()
-    thumbnail_size = (100, 100)  # Adjust the size as per your requirement
-    pool.starmap(
-        generate_thumbnail,
-        [(image_path, output_dir, thumbnail_size) for image_path in image_paths],
-    )
-    pool.close()
-    pool.join()
+    with Pool() as pool, tqdm(
+        total=len(image_paths), desc="Generating Thumbnails"
+    ) as pbar:
+        thumbnail_size = (100, 100)  # Adjust the size as per your requirement
+        results = []
+        for image_path in image_paths:
+            results.append(
+                pool.starmap_async(
+                    generate_thumbnail, [(image_path, output_dir, thumbnail_size)]
+                )
+            )
+            pbar.update(1)
+
+        for result in tqdm(results, desc="Processing Thumbnails"):
+            result.wait()
 
     # Create the contact sheet
     thumbnails = [
         Image.open(os.path.join(output_dir, file)) for file in os.listdir(output_dir)
     ]
     num_thumbnails = len(thumbnails)
-    contact_sheet_width = int(num_thumbnails**0.5)  # Number of thumbnails per row
+    contact_sheet_width = int(num_thumbnails ** 0.5)  # Number of thumbnails per row
     contact_sheet_height = (num_thumbnails // contact_sheet_width) + (
         num_thumbnails % contact_sheet_width > 0
     )
@@ -78,8 +87,16 @@ def create_contact_sheet(image_dir, output_file):
     os.rmdir(output_dir)
 
 
-if __name__ == "__main__":
-    # Usage example
-    image_dir = "/Users/cobanov-air/Desktop/class_03"
-    output_file = "output_contact_sheet.jpg"
+def main(image_dir, output_file):
     create_contact_sheet(image_dir, output_file)
+
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Contact Sheet Generator")
+    parser.add_argument("image_dir", type=str, help="Directory path containing images")
+    parser.add_argument("output_file", type=str, help="Output file path for contact sheet")
+    args = parser.parse_args()
+
+    # Run the main function with the provided arguments
+    main(args.image_dir, args.output_file)
