@@ -41,7 +41,7 @@ Replace /path/to/images with the directory path containing the images you want t
 
 ## Output
 
-![](output_contact_sheet.jpeg)
+![](output.jpeg)
 
 ## Additional Notes
 
