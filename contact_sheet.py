@@ -27,9 +27,7 @@ def generate_thumbnail(image_path, output_dir, thumbnail_size):
     image.save(os.path.join(output_dir, os.path.basename(image_path)))
 
 
-def create_contact_sheet(image_dir, output_file):
-    image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir)]
-
+def create_contact_sheet(image_paths, output_file):
     # Create the output directory for thumbnails
     output_dir = "thumbnails"
     os.makedirs(output_dir, exist_ok=True)
@@ -56,7 +54,7 @@ def create_contact_sheet(image_dir, output_file):
         Image.open(os.path.join(output_dir, file)) for file in os.listdir(output_dir)
     ]
     num_thumbnails = len(thumbnails)
-    contact_sheet_width = int(num_thumbnails ** 0.5)  # Number of thumbnails per row
+    contact_sheet_width = int(num_thumbnails**0.5)  # Number of thumbnails per row
     contact_sheet_height = (num_thumbnails // contact_sheet_width) + (
         num_thumbnails % contact_sheet_width > 0
     )
@@ -87,16 +85,33 @@ def create_contact_sheet(image_dir, output_file):
     os.rmdir(output_dir)
 
 
-def main(image_dir, output_file):
-    create_contact_sheet(image_dir, output_file)
+def main(output_file, image_dir=None, file_list=None):
+    if file_list is not None:
+        with open(file_list, "r") as f:
+            image_paths = [line.strip() for line in f.readlines()]
+    elif image_dir is not None:
+        image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir)]
+    else:
+        print("Please provide at least folder path or file list.")
+    create_contact_sheet(image_paths, output_file)
 
 
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Contact Sheet Generator")
-    parser.add_argument("image_dir", type=str, help="Directory path containing images")
-    parser.add_argument("output_file", type=str, help="Output file path for contact sheet")
+    parser.add_argument(
+        "output_file", type=str, help="Output file path for contact sheet"
+    )
+    parser.add_argument(
+        "--image_dir", type=str, default=None, help="Directory path containing images"
+    )
+    parser.add_argument(
+        "--file_list",
+        type=str,
+        default=None,
+        help="Path to the file list (filelist.txt) if available",
+    )
     args = parser.parse_args()
 
     # Run the main function with the provided arguments
-    main(args.image_dir, args.output_file)
+    main(args.output_file, args.image_dir, args.file_list)
