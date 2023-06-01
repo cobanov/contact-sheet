@@ -3,8 +3,8 @@ from PIL import Image
 from multiprocessing import Pool
 from tqdm import tqdm
 import argparse
-
-
+from utils import create_contact_sheet_no_crop
+accepted_extensions = (".jpg", ".jpeg", ".png")
 def generate_thumbnail(image_path, output_dir, thumbnail_size):
     image = Image.open(image_path)
 
@@ -27,8 +27,10 @@ def generate_thumbnail(image_path, output_dir, thumbnail_size):
     image.save(os.path.join(output_dir, os.path.basename(image_path)))
 
 
-def create_contact_sheet(image_dir, output_file):
-    image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir)]
+def create_contact_sheet(image_dir, output_file, img_size):
+    if img_size ==0:
+        img_size = len(os.listdir(image_dir))
+    image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir)[0:img_size] if file.lower().endswith(accepted_extensions)]
 
     # Create the output directory for thumbnails
     output_dir = "thumbnails"
@@ -86,9 +88,28 @@ def create_contact_sheet(image_dir, output_file):
         os.remove(os.path.join(output_dir, file))
     os.rmdir(output_dir)
 
+def progress_no_crop(*args):
+    print(args)
+    # create no crop contact sheet from provided rectangles
+    for rect in tqdm(args[1],desc='Processing images', unit='image'):
+        b, x, y, w, h, rid = rect
 
-def main(image_dir, output_file):
-    create_contact_sheet(image_dir, output_file)
+        # resize image
+        img = args[2][rid].resize((w, h))
+
+        # paste image on contact_sheet
+        args[0].paste(img, (x, y))
+
+    # save the final image
+    args[0].save(args[3])
+
+    
+def main(image_dir, output_file, no_crop, img_size):
+    if no_crop:
+        contact_sheet,all_rects,images = create_contact_sheet_no_crop(image_dir, output_file, img_size)
+        progress_no_crop(contact_sheet,all_rects,images,output_file)
+    else:
+        create_contact_sheet(image_dir, output_file, img_size)
 
 
 if __name__ == "__main__":
@@ -96,7 +117,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Contact Sheet Generator")
     parser.add_argument("image_dir", type=str, help="Directory path containing images")
     parser.add_argument("output_file", type=str, help="Output file path for contact sheet")
+    parser.add_argument("--img-size", type=int, help="Contact sheet image size",  default=0)
+    parser.add_argument("--no-crop", help="No crop for generate contact sheet", action="store_true")
     args = parser.parse_args()
 
     # Run the main function with the provided arguments
-    main(args.image_dir, args.output_file)
+    main(args.image_dir, args.output_file, args.no_crop, args.img_size)
