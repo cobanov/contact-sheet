@@ -17,7 +17,6 @@ def create_contact_sheet_no_crop(image_paths, output_file, img_size):
             images.append(img)
             sizes.append(img.size)
             total_size += img.size[0] * img.size[1]
-            print("FINISHED1")
 
     # calculate the side of a square that can contain all images
     side = int(math.sqrt(total_size))
@@ -27,7 +26,6 @@ def create_contact_sheet_no_crop(image_paths, output_file, img_size):
     # add the rectangles to packing queue
     for i, size in enumerate(sizes):
         packer.add_rect(*size, i) 
-    print("FINISHED2")
 
     # add the bin (final image)
     packer.add_bin(side, side)
@@ -41,7 +39,6 @@ def create_contact_sheet_no_crop(image_paths, output_file, img_size):
 
     # create a blank canvas
     contact_sheet = Image.new('RGB', (side, side))
-    print("FINISHED4")
 
     return contact_sheet,all_rects,images
 
