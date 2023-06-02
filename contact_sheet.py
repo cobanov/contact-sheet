@@ -3,8 +3,8 @@ from PIL import Image
 from multiprocessing import Pool
 from tqdm import tqdm
 import argparse
-
-
+from utils import create_contact_sheet_no_crop
+accepted_extensions = (".jpg", ".jpeg", ".png")
 def generate_thumbnail(image_path, output_dir, thumbnail_size):
     image = Image.open(image_path)
 
@@ -27,18 +27,21 @@ def generate_thumbnail(image_path, output_dir, thumbnail_size):
     image.save(os.path.join(output_dir, os.path.basename(image_path)))
 
 
-def create_contact_sheet(image_paths, output_file):
+def create_contact_sheet(image_paths, output_file, img_size):
+    if img_size ==0:
+        img_size = len(image_paths)
+    
     # Create the output directory for thumbnails
     output_dir = "thumbnails"
     os.makedirs(output_dir, exist_ok=True)
 
     # Use multiprocessing to generate thumbnails
     with Pool() as pool, tqdm(
-        total=len(image_paths), desc="Generating Thumbnails"
+        total=len(image_paths[0:img_size]), desc="Generating Thumbnails"
     ) as pbar:
         thumbnail_size = (100, 100)  # Adjust the size as per your requirement
         results = []
-        for image_path in image_paths:
+        for image_path in image_paths[0:img_size]:
             results.append(
                 pool.starmap_async(
                     generate_thumbnail, [(image_path, output_dir, thumbnail_size)]
@@ -84,16 +87,34 @@ def create_contact_sheet(image_paths, output_file):
         os.remove(os.path.join(output_dir, file))
     os.rmdir(output_dir)
 
+def progress_no_crop(*args):
+    # create no crop contact sheet from provided rectangles
+    for rect in tqdm(args[1],desc='Processing images', unit='image'):
+        _, x, y, w, h, rid = rect
+        # resize image
+        img = args[2][rid].resize((w, h))
+        # paste image on contact_sheet
+        args[0].paste(img, (x, y))
 
-def main(output_file, image_dir=None, file_list=None):
+    # save the final image
+    args[0].save(args[3])
+
+
+def main(output_file, image_dir=None, file_list=None, no_crop=None, img_size=0):
+    
     if file_list is not None:
         with open(file_list, "r") as f:
             image_paths = [line.strip() for line in f.readlines()]
     elif image_dir is not None:
-        image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir)]
+        image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir) if file.lower().endswith(accepted_extensions)]
     else:
         print("Please provide at least folder path or file list.")
-    create_contact_sheet(image_paths, output_file)
+    if no_crop:
+        image_paths = [os.path.join(image_dir, file) for file in os.listdir(image_dir) if file.lower().endswith(accepted_extensions)]
+        contact_sheet,all_rects,images = create_contact_sheet_no_crop(image_paths, output_file, img_size)
+        progress_no_crop(contact_sheet,all_rects,images,output_file)
+    else:
+        create_contact_sheet(image_paths, output_file, img_size)
 
 
 if __name__ == "__main__":
@@ -111,7 +132,17 @@ if __name__ == "__main__":
         default=None,
         help="Path to the file list (filelist.txt) if available",
     )
+    parser.add_argument(
+        "--img-size",
+          type=int, 
+          help="Contact sheet image size", 
+          default=0)
+    parser.add_argument(
+        "--no-crop",
+          help="No crop for generate contact sheet",
+          default=None,
+          action="store_true")
     args = parser.parse_args()
 
     # Run the main function with the provided arguments
-    main(args.output_file, args.image_dir, args.file_list)
+    main(args.output_file, args.image_dir, args.file_list, args.no_crop, args.img_size)
