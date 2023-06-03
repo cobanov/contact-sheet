@@ -39,14 +39,7 @@ python contact_sheet.py /path/to/images output_contact_sheet.jpg
 ```shell
 python contract_sheet.py /path/to/images --img-size 500 --no-crop result.jpg
 ```
-## Arguments 
-| Name             | Type | Description 
-| ----------------- | ------------- | ----------- |
-| --image_dir | **str** | Path of image directory |
-| --file_list(optional) | **str** | Path to the file list (filelist.txt) if available |
-| --img-size(optional) | **int** | Adjust image size to process |
-| --no-crop(optional) | **bool** | Create without cropping images, support v&h pictures|
-| output_file | **str** | Output file name|
+
 
 
 
@@ -56,6 +49,15 @@ Replace /path/to/images with the directory path containing the images you want t
 6. The script will start generating the contact sheet and display progress bars using the tqdm library.
 
 7. Once the process completes, the contact sheet will be saved to the specified output file path.
+
+## Arguments 
+| Name             | Type | Description 
+| ----------------- | ------------- | ----------- |
+| --image_dir | **str** | Path of image directory |
+| --file_list(optional) | **str** | Path to the file list (filelist.txt) if available |
+| --img-size(optional) | **int** | Adjust image size to process |
+| --no-crop(optional) | **bool** | Create without cropping images, support v&h pictures|
+| output_file | **str** | Output file name|
 
 ## Output
 
