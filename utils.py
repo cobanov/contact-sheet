@@ -3,6 +3,7 @@ import os
 from rectpack import newPacker
 from tqdm import tqdm
 import math
+from wand.image import Image as wandImage
 accepted_extensions = (".jpg", ".jpeg", ".png")
 
 def create_contact_sheet_no_crop(image_paths, output_file, img_size):
@@ -13,6 +14,7 @@ def create_contact_sheet_no_crop(image_paths, output_file, img_size):
         img_size = len(image_paths)
     for filename in image_paths[0:img_size]:
         if filename.lower().endswith(accepted_extensions):
+            
             img = Image.open(filename)
             images.append(img)
             sizes.append(img.size)
@@ -41,4 +43,14 @@ def create_contact_sheet_no_crop(image_paths, output_file, img_size):
     contact_sheet = Image.new('RGB', (side, side))
 
     return contact_sheet,all_rects,images
+
+
+
+
+
+def heic_converter(path, out_path,format='jpeg'):
+    with wandImage(filename=path) as img:
+        img.format = format
+        img.save(filename=out_path)
+
 
