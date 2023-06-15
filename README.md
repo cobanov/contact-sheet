@@ -11,6 +11,7 @@ Also, it generates grid pattern without cropping the images. It supports both ve
 - `multiprocessing` module
 - `tqdm` library
 - `rectpack` library
+- `wand` library
 
 ## Usage
 
@@ -35,9 +36,12 @@ pip install -r requirements.txt
 ```shell
 python contact_sheet.py /path/to/images output_contact_sheet.jpg
 ```
-6. Also, you can specify options with additional arguments (**--img-size ,  --no-crop**)
+6. Also, you can specify options with additional arguments (**--img-size , --heic_to, --shuffle --no-crop**)
+
+
+**important :** if you want to use ```heic_to``` feature, please refer [ImageMagick](https://imagemagick.org/script/download.php#windows) download page and install it for desired platform.
 ```shell
-python contract_sheet.py /path/to/images --img-size 500 --no-crop result.jpg
+python contract_sheet.py /path/to/images --shuffle --heic_to jpeg --img-size 500 --no-crop result.jpg
 ```
 ## Arguments 
 | Name             | Type | Description 
@@ -46,6 +50,8 @@ python contract_sheet.py /path/to/images --img-size 500 --no-crop result.jpg
 | --file_list(optional) | **str** | Path to the file list (filelist.txt) if available |
 | --img-size(optional) | **int** | Adjust image size to process |
 | --no-crop(optional) | **bool** | Create without cropping images, support v&h pictures|
+| --heic_to | **str** | convert **.HEIC** images to desired( **.jpg**  or .**png**) |
+| --shuffle | **bool** | Shuffle thumbnail images for get different output|
 | output_file | **str** | Output file name|
 
 
