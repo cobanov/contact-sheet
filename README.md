@@ -46,9 +46,9 @@ python contract_sheet.py /path/to/images --shuffle --heic_to jpeg --img-size 500
 
 Replace /path/to/images with the directory path containing the images you want to generate a contact sheet from, and output_contact_sheet.jpg with the desired output file path for the contact sheet.
 
-6. The script will start generating the contact sheet and display progress bars using the tqdm library.
+7. The script will start generating the contact sheet and display progress bars using the tqdm library.
 
-7. Once the process completes, the contact sheet will be saved to the specified output file path.
+8. Once the process completes, the contact sheet will be saved to the specified output file path.
 
 
 ## Arguments 
